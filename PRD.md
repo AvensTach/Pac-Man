@@ -97,21 +97,14 @@ The ghosts must implement distinct targeting logic (if advanced) or random movem
 
 ## 7. Milestones & Timeline
 
-| Phase | Description
-| :--- | :--- | :--- |
-
-| **Phase 1** | Project Setup, Git Repo init, Basic Window & Map rendering.
-
-| **Phase 2** | Pac-Man Movement & Wall Collision.
-
-| **Phase 3** | Pellet Collection & Scoring System.
-
-| **Phase 4** | Ghost Implementation (Basic Movement). 
-
-| **Phase 5** | Ghost AI & Collision Logic (Win/Loss states).
-
-| **Phase 6** | UI, Sound, Polish, and Bug Fixing.
-
+| Phase      | Description                                                        |
+| :--------- | :----------------------------------------------------------------- |
+| **Phase 1** | Project Setup, Git Repo init, Basic Window & Map rendering.       |
+| **Phase 2** | Pac-Man Movement & Wall Collision.                                |
+| **Phase 3** | Pellet Collection & Scoring System.                               |
+| **Phase 4** | Ghost Implementation (Basic Movement).                            |
+| **Phase 5** | Ghost AI & Collision Logic (Win/Loss states).                     |
+| **Phase 6** | UI, Sound, Polish, and Bug Fixing.                                |
 ---
 
 ## 8. Future Improvements (Post-Submission)
