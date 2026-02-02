@@ -25,3 +25,12 @@ class Level:
         ]
         self.walls = []
         self.floors = []
+        self.load_level()
+
+    def load_level(self):
+        for row in range(len(self.layout)):
+            for col in range(len(self.layout[row])):
+                if self.layout[row][col] == "1":
+                    self.walls.append((row, col))
+                else:
+                    self.floors.append((row, col))
