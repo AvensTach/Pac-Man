@@ -1,4 +1,8 @@
 import pygame as pg
+from level import Level
+
+level = Level()
+print(len(level.walls), len(level.floors))
 
 pg.init()
 
