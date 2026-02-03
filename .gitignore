@@ -209,5 +209,7 @@ __marimo__/
 
 
 # .idea folder
-
 .idea
+
+# Folder for perssonal librery test
+/myTests/
