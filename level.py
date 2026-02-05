@@ -1,36 +1,44 @@
+import pygame as pg
+from settings import LAYOUT, TILE_SIZE, WALL_COLOR, BORDER_COLOR, BORDER_WIDTH, RADIUS
+
 class Level:
     def __init__(self):
-        self.layout = [
-            "1111111111111111111",
-            "1000000001000000001",
-            "1011011101011101101",
-            "1000000000000000001",
-            "1011010111110101101",
-            "1000010001000100001",
-            "1111011101011101111",
-            "1111010000000101111",
-            "1111010110110101111",
-            "0000000100010000000",
-            "1111010111110101111",
-            "1111010000000101111",
-            "1111010111110101111",
-            "1000000001000000001",
-            "1011011101011101101",
-            "1001000000000001001",
-            "1101010111110101011",
-            "1000010001000100001",
-            "1011111101011111101",
-            "1000000000000000001",
-            "1111111111111111111"
-        ]
-        self.walls = []
-        self.floors = []
-        self.load_level()
+        self.layout = LAYOUT
+        
+    def is_wall(self, r, c):
+        if r < 0 or c < 0:
+            return False
+        if r >= len(self.layout) or c >= len(self.layout[0]):
+            return False
+        return self.layout[r][c] == "1"
 
-    def load_level(self):
-        for row in range(len(self.layout)):
-            for col in range(len(self.layout[row])):
-                if self.layout[row][col] == "1":
-                    self.walls.append((row, col))
-                else:
-                    self.floors.append((row, col))
+    def draw_wall(self, screen, row, col):
+        x = col * TILE_SIZE
+        y = row * TILE_SIZE
+        r = TILE_SIZE
+    
+        # фон стіни
+        pg.draw.rect(screen, WALL_COLOR, (x, y, r, r))
+    
+        # лівий край
+        if not self.is_wall(row, col - 1):
+            pg.draw.line(screen, BORDER_COLOR, (x, y), (x, y + r), BORDER_WIDTH)
+    
+        # правий край
+        if not self.is_wall(row, col + 1):
+            pg.draw.line(screen, BORDER_COLOR, (x + r, y), (x + r, y + r), BORDER_WIDTH)
+    
+        # верхній край
+        if not self.is_wall(row - 1, col):
+            pg.draw.line(screen, BORDER_COLOR, (x, y), (x + r, y), BORDER_WIDTH)
+    
+        # нижній край
+        if not self.is_wall(row + 1, col):
+            pg.draw.line(screen, BORDER_COLOR, (x, y + r), (x + r, y + r), BORDER_WIDTH)
+
+
+    def draw(self, screen):
+        for r in range(len(self.layout)):
+            for c in range(len(self.layout[r])):
+                if self.layout[r][c] == "1":
+                    self.draw_wall(screen, r, c)
