@@ -2,6 +2,7 @@ import random
 import ghosts
 import pygame as pg
 import settings as s
+from level import Level
 
 pg.init()
 
@@ -10,6 +11,8 @@ pg.display.set_caption("Pacman")
 
 clock = pg.time.Clock()
 running = True
+
+level = Level()
 
 # ghosts
 # coordinates are random for tets
@@ -36,6 +39,10 @@ while running:
     pinky.update()
     inky.update()
     clyde.update()
+
+    # Level drawing
+    screen.fill((0, 0, 0))
+    level.draw(screen)
 
     pg.display.flip()
     clock.tick(60)
