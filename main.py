@@ -14,19 +14,34 @@ running = True
 
 level = Level()
 
-# ghosts
-# coordinates are random for tets
-blinky = ghosts.Ghost(random.randint(0, 760), random.randint(0, 760), s.GhostType.BLINKY)
-pinky = ghosts.Ghost(random.randint(0, 760), random.randint(0, 760), s.GhostType.PINKY)
-inky = ghosts.Ghost(random.randint(0, 760), random.randint(0, 760), s.GhostType.INKY)
-clyde = ghosts.Ghost(random.randint(0, 760), random.randint(0, 760), s.GhostType.CLYDE)
+
+def random_empty_tile() -> tuple:
+    """ helper to find a random empty tile """
+    while True:
+        r: int = random.randint(0, s.ROWS - 1)
+        c: int = random.randint(0, s.COLS - 1)
+        if not level.is_wall(r, c):
+            return r, c
+
+
+# ghosts spawned on tiles
+br, bc= random_empty_tile()
+blinky = ghosts.Ghost(br, bc, s.GhostType.BLINKY, level)
+pr, pc = random_empty_tile()
+pinky = ghosts.Ghost(pr, pc, s.GhostType.PINKY, level)
+ir, ic = random_empty_tile()
+inky = ghosts.Ghost(ir, ic, s.GhostType.INKY, level)
+cr, cc = random_empty_tile()
+clyde = ghosts.Ghost(cr, cc, s.GhostType.CLYDE, level)
 
 while running:
     for event in pg.event.get():
         if event.type == pg.QUIT:
             running = False
 
+    # Level drawing
     screen.fill((0, 0, 0))
+    level.draw(screen)
 
     # draw ghosts
     blinky.draw(screen)
@@ -39,10 +54,6 @@ while running:
     pinky.update()
     inky.update()
     clyde.update()
-
-    # Level drawing
-    screen.fill((0, 0, 0))
-    level.draw(screen)
 
     pg.display.flip()
     clock.tick(60)
