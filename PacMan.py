@@ -42,8 +42,20 @@ class Pacman:
 
         return layout[row][col] == "0"
 
-    #DRAW
 
+    #UPDATE
+    def update(self, layout):
+
+        if self._can_move(layout, self.next_direction):
+            self.direction = self.next_direction
+
+        if self._can_move(layout, self.direction):
+            dx, dy = self.direction.value
+            self.x += dx * self.speed
+            self.y += dy * self.speed
+
+
+    #DRAW
     def draw(self, screen):
         pg.draw.circle(
             screen,
