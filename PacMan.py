@@ -1,5 +1,5 @@
 import pygame as pg
-from settings import TILE_SIZE, Direction, BASE_SPEED
+from settings import TILE_SIZE, Direction, BASE_SPEED, ROWS, COLS
 
 
 class Pacman:
@@ -12,7 +12,7 @@ class Pacman:
         self.y = row * TILE_SIZE
 
         self.alive = True
-        self.base_speed = BASE_SPEED  # pixels per frame (use BASE_SPEED like ghosts)
+        self.base_speed = BASE_SPEED
 
         self.direction = Direction.STOP
         self.next_direction = Direction.STOP
@@ -29,6 +29,23 @@ class Pacman:
     @property
     def grid_pos(self):
         return self.row, self.col
+
+    def _is_tunnel_row(self) -> bool:
+        """Check if current row is in the tunnel area (middle of map)"""
+        # Tunnel is roughly in the middle rows
+        return 8 <= self.row <= 11
+
+    def _handle_teleport(self):
+        """Handle teleportation through the tunnel"""
+        # If Pacman goes off the left side of the tunnel, teleport to right
+        if self.col < 0 and self._is_tunnel_row():
+            self.col = COLS - 1
+            self.x = self.col * TILE_SIZE
+
+        # If Pacman goes off the right side of the tunnel, teleport to left
+        elif self.col >= COLS and self._is_tunnel_row():
+            self.col = 0
+            self.x = self.col * TILE_SIZE
 
     # INPUT
     def handle_input(self, event):
@@ -52,9 +69,15 @@ class Pacman:
         next_row = self.row + dy
         next_col = self.col + dx
 
-        # Check bounds
-        if next_row < 0 or next_row >= len(layout) or next_col < 0 or next_col >= len(layout[0]):
+        # Check bounds - allow movement off-screen in tunnel rows only
+        if next_row < 0 or next_row >= len(layout):
             return False
+
+        # Allow wrapping through tunnel on left/right sides
+        if next_col < 0 or next_col >= len(layout[0]):
+            # Only allow if in tunnel row
+            return self._is_tunnel_row() or (next_col == -1 and self._is_tunnel_row()) or (
+                        next_col == COLS and self._is_tunnel_row())
 
         return layout[next_row][next_col] == "0"
 
@@ -93,6 +116,10 @@ class Pacman:
             if self.move_progress >= TILE_SIZE:
                 self.row = self.target_row
                 self.col = self.target_col
+
+                # Handle teleportation through tunnel
+                self._handle_teleport()
+
                 self.x = self.col * TILE_SIZE
                 self.y = self.row * TILE_SIZE
                 self.moving = False
