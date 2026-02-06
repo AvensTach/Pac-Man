@@ -12,3 +12,20 @@ class PacMan:
         self.next_direction = pg.Vector2(0, 0)
 
         self.radius = tile // 2 - 2
+
+
+    #INPUT
+    def handle_input(self,event):
+        if event.type != pg.KEYDOWN:
+            return
+        if event.key in (pg.K_LEFT, pg.K_a):
+            self.next_direction = pg.Vector2(-1, 0)
+
+        elif event.key in (pg.K_RIGHT, pg.K_d):
+            self.next_direction = pg.Vector2(1, 0)
+
+        elif event.key in (pg.K_UP, pg.K_w):
+            self.next_direction = pg.Vector2(0, -1)
+
+        elif event.key in (pg.K_DOWN, pg.K_s):
+            self.next_direction = pg.Vector2(0, 1)
