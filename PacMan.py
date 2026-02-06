@@ -1,16 +1,12 @@
 import pygame as pg
 from settings import TILE_SIZE, Direction
 
-class PacMan:
+class Pacman:
     def __init__(self, row, col, speed=2):
         self.x = col * TILE_SIZE
         self.y = row * TILE_SIZE
 
-
         self.speed = speed
-
-
-
 
         self.direction = Direction.STOP
         self.next_direction = Direction.STOP
@@ -45,3 +41,13 @@ class PacMan:
         row = int((new_y + TILE_SIZE / 2) // TILE_SIZE)
 
         return layout[row][col] == "0"
+
+    #DRAW
+
+    def draw(self, screen):
+        pg.draw.circle(
+            screen,
+            self.color,
+            (int(self.x + TILE_SIZE/2), int(self.y + TILE_SIZE/2)),
+            self.radius
+        )
