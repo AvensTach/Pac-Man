@@ -27,7 +27,7 @@ def random_empty_tile() -> tuple:
 
 #Pacman spawned on tiles
 pr, pc = random_empty_tile()
-pacman = PacMan.Pacman(pr, pc, s.TILE_SIZE)
+pacman = PacMan.Pacman(pr, pc)
 
 # ghosts spawned on tiles
 br, bc= random_empty_tile()
