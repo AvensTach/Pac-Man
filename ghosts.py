@@ -34,6 +34,10 @@ class Ghost():
         y: int = row * s.TILE_SIZE + (s.TILE_SIZE - sprite_size) // 2
         self.rect = pg.Rect(x, y, sprite_size, sprite_size)
 
+    @property
+    def grid_pos(self):
+        return self.row, self.col
+
     def draw(self, screen):
         """ Draw the ghost centered in its tile rect """
         draw_color = (0, 0, 255) if self.frightened else self.color
@@ -107,3 +111,5 @@ class Ghost():
                 self.rect.topleft = (new_x, new_y)
                 self.moving = False
                 self.move_progress = 0
+
+

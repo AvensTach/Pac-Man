@@ -1,10 +1,13 @@
 import pygame as pg
 from settings import TILE_SIZE, Direction
 
+
 class Pacman:
-    def __init__(self, row, col, speed=2):
+    def __init__(self, row: int, col: int, speed=2):
         self.x = col * TILE_SIZE
         self.y = row * TILE_SIZE
+
+        self.alive = True
 
         self.speed = speed
 
@@ -14,6 +17,9 @@ class Pacman:
         self.radius = TILE_SIZE// 2 - 2
         self.color = (255, 255, 0)
 
+    @property
+    def grid_pos(self):
+        return int(self.y // TILE_SIZE), int(self.x // TILE_SIZE)
 
     #INPUT
     def handle_input(self,event):
@@ -46,13 +52,22 @@ class Pacman:
     #UPDATE
     def update(self, layout):
 
-        if self._can_move(layout, self.next_direction):
-            self.direction = self.next_direction
+        if self.direction == Direction.STOP:
+            if self._can_move(layout, self.next_direction):
+                self.direction = self.next_direction
+            else:
+                return
 
-        if self._can_move(layout, self.direction):
-            dx, dy = self.direction.value
-            self.x += dx * self.speed
-            self.y += dy * self.speed
+        dx, dy = self.direction.value
+        next_row = int(self.y // TILE_SIZE + dy)
+        next_col = int(self.x // TILE_SIZE + dx)
+
+
+        if layout[next_row][next_col] == "0":
+            self.y = next_row * TILE_SIZE
+            self.x = next_col * TILE_SIZE
+        else:
+            self.direction = Direction.STOP
 
 
     #DRAW
@@ -63,3 +78,8 @@ class Pacman:
             (int(self.x + TILE_SIZE/2), int(self.y + TILE_SIZE/2)),
             self.radius
         )
+    #Logic of death
+    def check_ghost_collision(self, ghosts):
+        for g in ghosts:
+            if self.grid_pos == g.grid_pos:
+                self.alive = False
