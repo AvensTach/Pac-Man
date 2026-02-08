@@ -1,5 +1,5 @@
 import pygame as pg
-from settings import LAYOUT, TILE_SIZE, WALL_COLOR, BORDER_COLOR, BORDER_WIDTH, RADIUS
+from settings import LAYOUT, TILE_SIZE, WALL_COLOR, BORDER_COLOR, BORDER_WIDTH, RADIUS, COIN_COLOR, COIN_RADIUS
 
 class Level:
     def __init__(self):
@@ -49,3 +49,9 @@ class Level:
             for c in range(len(self.layout[r])):
                 if self.layout[r][c] == "0":
                     self.coins.add((r, c))
+
+    def draw_coins(self, screen):
+        for r, c in self.coins:
+            cx = c * TILE_SIZE + TILE_SIZE // 2
+            cy = r * TILE_SIZE + TILE_SIZE // 2
+            pg.draw.circle(screen, COIN_COLOR, (cx, cy), COIN_RADIUS)
