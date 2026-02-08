@@ -5,10 +5,8 @@ class Level:
     def __init__(self):
         self.layout = LAYOUT
         self.coins = set()
-        self.spawn_coins() 
         print("coins:", len(self.coins))
 
-        
     def is_wall(self, r, c):
         if r < 0 or c < 0:
             return False

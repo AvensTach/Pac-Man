@@ -65,7 +65,7 @@ while running:
     clyde.update()
 
     # update pacman
-    pacman.update(s.LAYOUT)
+    pacman.update(s.LAYOUT, level)
 
     pacman.check_ghost_collision([blinky, pinky, inky, clyde])
     if not pacman.alive:
