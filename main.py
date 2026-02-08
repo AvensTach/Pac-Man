@@ -72,7 +72,6 @@ while running:
         print("Pacman DIED")
         running = False
 
-
     pg.display.flip()
     clock.tick(s.FPS)
 
