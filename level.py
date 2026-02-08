@@ -43,3 +43,9 @@ class Level:
             for c in range(len(self.layout[r])):
                 if self.layout[r][c] == "1":
                     self.draw_wall(screen, r, c)
+    
+    def spawn_coins(self):
+        for r in range(len(self.layout)):
+            for c in range(len(self.layout[r])):
+                if self.layout[r][c] == "0":
+                    self.coins.add((r, c))
