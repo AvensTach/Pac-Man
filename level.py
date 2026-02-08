@@ -1,11 +1,12 @@
 import pygame as pg
-from settings import LAYOUT, TILE_SIZE, WALL_COLOR, BORDER_COLOR, BORDER_WIDTH, RADIUS, COIN_COLOR, COIN_RADIUS
+from settings import LAYOUT, TILE_SIZE, WALL_COLOR, BORDER_COLOR, BORDER_WIDTH, RADIUS, COIN_COLOR, COIN_RADIUS, COIN_SCORE_VALUE
 
 class Level:
     def __init__(self):
         self.layout = LAYOUT
         self.coins = set()
-        print("coins:", len(self.coins))
+        self.score = 0
+        self.spawn_coins()
 
     def is_wall(self, r, c):
         if r < 0 or c < 0:

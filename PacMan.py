@@ -1,5 +1,5 @@
 import pygame as pg
-from settings import TILE_SIZE, Direction, BASE_SPEED, ROWS, COLS
+from settings import TILE_SIZE, Direction, BASE_SPEED, ROWS, COLS, COIN_SCORE_VALUE
 
 class Pacman:
     def __init__(self, row: int, col: int):
@@ -132,7 +132,7 @@ class Pacman:
         # If Pacman enters a tile containing a coin, collect it
         if pos in level.coins:
             level.coins.remove(pos)
-
+            level.score += COIN_SCORE_VALUE
 
     # DRAW
     def draw(self, screen):
