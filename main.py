@@ -46,7 +46,7 @@ while running:
         pacman.handle_input(event)
 
     # Level drawing
-    screen.fill((0, 0, 0))
+    screen.fill(s.WALL_COLOR)
     level.draw(screen)
 
     # draw pacman
@@ -74,6 +74,6 @@ while running:
 
 
     pg.display.flip()
-    clock.tick(60)
+    clock.tick(s.FPS)
 
 pg.quit()

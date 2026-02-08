@@ -17,22 +17,22 @@ class Level:
         y = row * TILE_SIZE
         r = TILE_SIZE
     
-        # фон стіни
+        # wall background
         pg.draw.rect(screen, WALL_COLOR, (x, y, r, r))
     
-        # лівий край
+        # left
         if not self.is_wall(row, col - 1):
             pg.draw.line(screen, BORDER_COLOR, (x, y), (x, y + r), BORDER_WIDTH)
     
-        # правий край
+        # right
         if not self.is_wall(row, col + 1):
             pg.draw.line(screen, BORDER_COLOR, (x + r, y), (x + r, y + r), BORDER_WIDTH)
     
-        # верхній край
+        # top
         if not self.is_wall(row - 1, col):
             pg.draw.line(screen, BORDER_COLOR, (x, y), (x + r, y), BORDER_WIDTH)
     
-        # нижній край
+        # bottom
         if not self.is_wall(row + 1, col):
             pg.draw.line(screen, BORDER_COLOR, (x, y + r), (x + r, y + r), BORDER_WIDTH)
 
