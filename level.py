@@ -1,5 +1,17 @@
 import pygame as pg
-from settings import LAYOUT, TILE_SIZE, WALL_COLOR, BORDER_COLOR, BORDER_WIDTH, RADIUS, COIN_COLOR, COIN_RADIUS, COIN_SCORE_VALUE
+from settings import (
+    LAYOUT,
+    TILE_SIZE,
+    WALL_COLOR,
+    BORDER_COLOR,
+    BORDER_WIDTH,
+    COIN_COLOR,
+    COIN_RADIUS,
+    SCORE_FONT_SIZE,
+    SCORE_PREFIX,
+    SCORE_COLOR,
+    SCORE_POSITION
+)
 
 class Level:
     def __init__(self):
@@ -59,6 +71,14 @@ class Level:
                     
         self.draw_coins(screen)
     
+    def draw_ui(self, screen):
+        font = pg.font.SysFont(None, SCORE_FONT_SIZE)
+        score_text = font.render(
+            f"{SCORE_PREFIX}{self.score}",
+            True,
+            SCORE_COLOR
+        )
+        screen.blit(score_text, SCORE_POSITION)
     
 
  
