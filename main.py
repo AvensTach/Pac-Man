@@ -46,7 +46,7 @@ while running:
         pacman.handle_input(event)
 
     # Level drawing
-    screen.fill((0, 0, 0))
+    screen.fill(s.WALL_COLOR)
     level.draw(screen)
 
     # draw pacman
@@ -65,15 +65,16 @@ while running:
     clyde.update()
 
     # update pacman
-    pacman.update(s.LAYOUT)
+    pacman.update(s.LAYOUT, level)
 
     pacman.check_ghost_collision([blinky, pinky, inky, clyde])
     if not pacman.alive:
         print("Pacman DIED")
         running = False
 
+    level.draw_ui(screen)
 
     pg.display.flip()
-    clock.tick(60)
+    clock.tick(s.FPS)
 
 pg.quit()

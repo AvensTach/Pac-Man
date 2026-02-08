@@ -1,6 +1,5 @@
 import pygame as pg
-from settings import TILE_SIZE, Direction, BASE_SPEED, ROWS, COLS
-
+from settings import TILE_SIZE, Direction, BASE_SPEED, ROWS, COLS, COIN_SCORE_VALUE
 
 class Pacman:
     def __init__(self, row: int, col: int):
@@ -92,7 +91,7 @@ class Pacman:
             self.target_col = self.col + dx
 
     # UPDATE
-    def update(self, layout):
+    def update(self, layout, level):
         # If not currently moving, try to move in the desired direction
         if not self.moving:
             if self.next_direction != Direction.STOP:
@@ -124,6 +123,16 @@ class Pacman:
                 self.y = self.row * TILE_SIZE
                 self.moving = False
                 self.move_progress = 0
+        
+        # Determine the current tile coordinates based on pixel position
+        row = self.y // TILE_SIZE
+        col = self.x // TILE_SIZE
+        pos = (row, col)
+
+        # If Pacman enters a tile containing a coin, collect it
+        if pos in level.coins:
+            level.coins.remove(pos)
+            level.score += COIN_SCORE_VALUE
 
     # DRAW
     def draw(self, screen):
