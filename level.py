@@ -4,6 +4,7 @@ from settings import LAYOUT, TILE_SIZE, WALL_COLOR, BORDER_COLOR, BORDER_WIDTH, 
 class Level:
     def __init__(self):
         self.layout = LAYOUT
+        self.coins = []
         
     def is_wall(self, r, c):
         if r < 0 or c < 0:
