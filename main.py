@@ -1,8 +1,10 @@
 import random
 import ghosts
+import PacMan
 import pygame as pg
 import settings as s
 from level import Level
+
 
 pg.init()
 
@@ -23,6 +25,9 @@ def random_empty_tile() -> tuple:
         if not level.is_wall(r, c):
             return r, c
 
+#Pacman spawned on tiles
+pr, pc = random_empty_tile()
+pacman = PacMan.Pacman(pr, pc)
 
 # ghosts spawned on tiles
 br, bc= random_empty_tile()
@@ -38,10 +43,14 @@ while running:
     for event in pg.event.get():
         if event.type == pg.QUIT:
             running = False
+        pacman.handle_input(event)
 
     # Level drawing
-    screen.fill((0, 0, 0))
+    screen.fill(s.WALL_COLOR)
     level.draw(screen)
+
+    # draw pacman
+    pacman.draw(screen)
 
     # draw ghosts
     blinky.draw(screen)
@@ -55,7 +64,17 @@ while running:
     inky.update()
     clyde.update()
 
+    # update pacman
+    pacman.update(s.LAYOUT, level)
+
+    pacman.check_ghost_collision([blinky, pinky, inky, clyde])
+    if not pacman.alive:
+        print("Pacman DIED")
+        running = False
+
+    level.draw_ui(screen)
+
     pg.display.flip()
-    clock.tick(60)
+    clock.tick(s.FPS)
 
 pg.quit()
