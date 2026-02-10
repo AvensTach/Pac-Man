@@ -59,10 +59,10 @@ while running:
     clyde.draw(screen)
 
     # update ghosts' position
-    blinky.update()
-    pinky.update()
-    inky.update()
-    clyde.update()
+    blinky.update(pacman)
+    pinky.update(pacman)
+    inky.update(pacman)
+    clyde.update(pacman)
 
     # update pacman
     pacman.update(s.LAYOUT, level)
