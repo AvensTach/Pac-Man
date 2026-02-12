@@ -5,17 +5,16 @@ from level import Level
 from PacMan import Pacman
 
 
-# noinspection SpellCheckingInspection
 class Ghost:
     """ Class to represent a ghost """
 
     def __init__(self, row: int, col: int, ghost_type: s.GhostType, level: Level):
-        # grid position (Inferred from arguments)
+        # grid position
         self.row = row
         self.col = col
         self.level = level
 
-        # visual / identity (Inferred from Enum)
+        # visual / identity
         self.color = ghost_type.value
         self.name = ghost_type.name
         self.ghost_type = ghost_type
@@ -27,8 +26,6 @@ class Ghost:
         # AI State
         self.mode = 'SCATTER'
         self.mode_timer = 0
-
-        # If _get_scatter_target() returns -> tuple, this is inferred automatically
         self.scatter_target = self._get_scatter_target()
 
         # Default Scatter/Chase cycle config
@@ -41,7 +38,6 @@ class Ghost:
         self.target_row = row
         self.target_col = col
 
-        # sprite setup (Local variables usually don't need hints either)
         sprite_size = max(4, s.TILE_SIZE - 4)
         x = col * s.TILE_SIZE + (s.TILE_SIZE - sprite_size) // 2
         y = row * s.TILE_SIZE + (s.TILE_SIZE - sprite_size) // 2
@@ -89,7 +85,7 @@ class Ghost:
                 dr, dc = pacman.direction.value
                 return pr + (dr * 4), pc + (dc * 4)
 
-            # INKY: Usually uses Blinky's pos, but simplified here to just be aggressive
+            # INKY: Usually uses Blinky pos, but simplified here to just be aggressive
             # Let's make him target 2 tiles ahead to be slightly different from Blinky
             case s.GhostType.INKY:
                 dr, dc = pacman.direction.value
