@@ -12,6 +12,10 @@ from settings import (
     SCORE_COLOR,
     SCORE_POSITION
 )
+from pill import Pill
+import settings as s
+
+
 
 class Level:
     def __init__(self):
@@ -19,6 +23,12 @@ class Level:
         self.coins = set()
         self.score = 0
         self.spawn_coins()
+        self.pills = [
+            Pill(1, 1),
+            Pill(1, s.COLS - 2),
+            Pill(s.ROWS - 2, 1),
+            Pill(s.ROWS - 2, s.COLS - 2)
+        ]
 
     def is_wall(self, r, c):
         if r < 0 or c < 0:
@@ -63,6 +73,14 @@ class Level:
             cy = r * TILE_SIZE + TILE_SIZE // 2
             pg.draw.circle(screen, COIN_COLOR, (cx, cy), COIN_RADIUS)
 
+    def draw_pills(self, screen):
+        for pill in self.pills:
+            pill.draw(screen)
+
+    def check_pills(self, pacman, ghosts):
+        for pill in self.pills:
+            pill.check_collision(pacman, ghosts)
+
     def draw(self, screen):
         for r in range(len(self.layout)):
             for c in range(len(self.layout[r])):
@@ -70,6 +88,7 @@ class Level:
                     self.draw_wall(screen, r, c)
                     
         self.draw_coins(screen)
+        self.draw_pills(screen)
     
     def draw_ui(self, screen):
         font = pg.font.SysFont(None, SCORE_FONT_SIZE)
