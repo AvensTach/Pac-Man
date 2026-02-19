@@ -1,6 +1,6 @@
 import random
 import ghosts
-import PacMan
+import pacman
 import pygame as pg
 import settings as s
 from level import Level
@@ -27,7 +27,7 @@ def random_empty_tile() -> tuple:
 
 #Pacman spawned on tiles
 pr, pc = random_empty_tile()
-pacman = PacMan.Pacman(pr, pc)
+pacman = pacman.Pacman(pr, pc)
 
 # ghosts spawned on tiles
 br, bc= random_empty_tile()
@@ -66,6 +66,9 @@ while running:
 
     # update pacman
     pacman.update(s.LAYOUT, level)
+    ghosts_list = [blinky, pinky, inky, clyde]
+
+    level.check_pills(pacman, ghosts_list)
 
     pacman.check_ghost_collision([blinky, pinky, inky, clyde])
     if not pacman.alive:
