@@ -1,6 +1,6 @@
 import random
 import ghosts
-import pacman
+from pacman import Pacman
 import pygame as pg
 import settings as s
 from level import Level
@@ -38,7 +38,6 @@ def quit_game():
 menu_screen = MainMenuScreen(on_play=start_game, on_exit=quit_game, on_settings=open_settings)
 settings_screen = SettingsScreen(on_back=open_menu)
 
-level = Level()
 
 
 def random_empty_tile() -> tuple:
@@ -54,7 +53,7 @@ def reset_game():
     # Create a new level
     level = Level()
     # --- Pacman Spawn (Standard Position) ---
-    pacman = pacman.Pacman(15, 9)
+    pacman = Pacman(15, 9)
 
     # --- Ghost Spawns (Ghost House) ---
     # Blinky: Outside house, active immediately
@@ -92,33 +91,34 @@ while running:
         # Level drawing
         screen.fill(s.WALL_COLOR)
         level.draw(screen)
-    
+
         # draw pacman
         pacman.draw(screen)
-    
+
         # draw ghosts
         blinky.draw(screen)
         pinky.draw(screen)
         inky.draw(screen)
         clyde.draw(screen)
-    
+
         # update ghosts' position
         blinky.update(pacman)
         pinky.update(pacman)
         inky.update(pacman)
         clyde.update(pacman)
-    
+
         # update pacman
         pacman.update(s.LAYOUT, level)
         ghosts_list = [blinky, pinky, inky, clyde]
-    
+
         level.check_pills(pacman, ghosts_list)
-    
+
         pacman.check_ghost_collision([blinky, pinky, inky, clyde])
         if not pacman.alive:
             print("Pacman DIED")
-            running = False
-    
+            state = s.STATE_MENU      # Return to the menu
+            pacman.alive = True
+
         level.draw_ui(screen)
 
     pg.display.flip()
