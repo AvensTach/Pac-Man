@@ -2,7 +2,7 @@ import math
 import settings as s
 import pygame as pg
 from level import Level
-from PacMan import Pacman
+from pacman import Pacman
 
 
 class Ghost:

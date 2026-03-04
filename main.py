@@ -4,7 +4,7 @@ import pacman
 import pygame as pg
 import settings as s
 from level import Level
-
+from menu import MainMenuScreen, SettingsScreen
 
 pg.init()
 
@@ -14,8 +14,31 @@ pg.display.set_caption("Pacman")
 clock = pg.time.Clock()
 running = True
 
-level = Level()
+state = s.STATE_MENU
 
+# --- State management functions ---
+def start_game():
+    global state
+    reset_game()
+    state = s.STATE_PLAYING
+
+def open_settings():
+    global state
+    state = s.STATE_SETTINGS
+
+def open_menu():
+    global state
+    state = s.STATE_MENU
+
+def quit_game():
+    global running
+    running = False
+
+# --- menu screens ---
+menu_screen = MainMenuScreen(on_play=start_game, on_exit=quit_game, on_settings=open_settings)
+settings_screen = SettingsScreen(on_back=open_menu)
+
+level = Level()
 
 def random_empty_tile() -> tuple:
     """ helper to find a random empty tile """
@@ -25,57 +48,77 @@ def random_empty_tile() -> tuple:
         if not level.is_wall(r, c):
             return r, c
 
-#Pacman spawned on tiles
-pr, pc = random_empty_tile()
-pacman = pacman.Pacman(pr, pc)
+def reset_game():
+    global pacman, blinky, pinky, inky, clyde, ghosts_list, level
+    
+    # Create a new level
+    level = Level()
 
-# ghosts spawned on tiles
-br, bc= random_empty_tile()
-blinky = ghosts.Ghost(br, bc, s.GhostType.BLINKY, level)
-pr, pc = random_empty_tile()
-pinky = ghosts.Ghost(pr, pc, s.GhostType.PINKY, level)
-ir, ic = random_empty_tile()
-inky = ghosts.Ghost(ir, ic, s.GhostType.INKY, level)
-cr, cc = random_empty_tile()
-clyde = ghosts.Ghost(cr, cc, s.GhostType.CLYDE, level)
+    #Pacman spawned on tiles
+    pr, pc = random_empty_tile()
+    pacman = pacman.Pacman(pr, pc)
+
+    # ghosts spawned on tiles
+    br, bc= random_empty_tile()
+    blinky = ghosts.Ghost(br, bc, s.GhostType.BLINKY, level)
+    pr, pc = random_empty_tile()
+    pinky = ghosts.Ghost(pr, pc, s.GhostType.PINKY, level)
+    ir, ic = random_empty_tile()
+    inky = ghosts.Ghost(ir, ic, s.GhostType.INKY, level)
+    cr, cc = random_empty_tile()
+    clyde = ghosts.Ghost(cr, cc, s.GhostType.CLYDE, level)
+
+    ghosts_list = [blinky, pinky, inky, clyde]
 
 while running:
     for event in pg.event.get():
         if event.type == pg.QUIT:
             running = False
-        pacman.handle_input(event)
+        
+        # Distribution of events depending on the state
+        if state == s.STATE_MENU:
+            menu_screen.handle_event(event)
+        elif state == s.STATE_SETTINGS:
+            settings_screen.handle_event(event)
+        elif state == s.STATE_PLAYING:
+            pacman.handle_input(event)
 
-    # Level drawing
-    screen.fill(s.WALL_COLOR)
-    level.draw(screen)
+    if state == s.STATE_MENU:
+        menu_screen.draw(screen)
+        
+    elif state == s.STATE_SETTINGS:
+        settings_screen.draw(screen)
+        
+    elif state == s.STATE_PLAYING:
+        # 1. LOGIC PROCESSING
+        pacman.update(s.LAYOUT, level)
+        
+        blinky.update(pacman)
+        pinky.update(pacman)
+        inky.update(pacman)
+        clyde.update(pacman)
 
-    # draw pacman
-    pacman.draw(screen)
+        # Collision check
+        pacman.check_ghost_collision([blinky, pinky, inky, clyde])
+        
+        if not pacman.alive:
+            print("Pacman DIED")
+            state = s.STATE_MENU      # Return to the menu
+            pacman.alive = True
 
-    # draw ghosts
-    blinky.draw(screen)
-    pinky.draw(screen)
-    inky.draw(screen)
-    clyde.draw(screen)
+        # 2. DRAWING
+        screen.fill(s.WALL_COLOR) # Background (color from settings)
+        level.draw(screen)
+        
+        pacman.draw(screen)
+        
+        blinky.draw(screen)
+        pinky.draw(screen)
+        inky.draw(screen)
+        clyde.draw(screen)
 
-    # update ghosts' position
-    blinky.update(pacman)
-    pinky.update(pacman)
-    inky.update(pacman)
-    clyde.update(pacman)
+        level.draw_ui(screen)
 
-    # update pacman
-    pacman.update(s.LAYOUT, level)
-    ghosts_list = [blinky, pinky, inky, clyde]
-
-    level.check_pills(pacman, ghosts_list)
-
-    pacman.check_ghost_collision([blinky, pinky, inky, clyde])
-    if not pacman.alive:
-        print("Pacman DIED")
-        running = False
-
-    level.draw_ui(screen)
 
     pg.display.flip()
     clock.tick(s.FPS)
