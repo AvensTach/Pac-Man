@@ -64,7 +64,13 @@ class Pacman:
         if next_col < 0 or next_col >= len(layout[0]):
             return self._is_tunnel_row()
 
-        return layout[next_row][next_col] == "0"
+        tile = layout[next_row][next_col]
+
+        # Pacman cannot enter the ghost house door
+        if tile == "=":
+            return False
+
+        return tile == "0"
 
     def _start_move(self, layout: list[list[str]], direction: Direction) -> None:
         if self.can_move_to(layout, direction):
@@ -122,5 +128,12 @@ class Pacman:
 
     def check_ghost_collision(self, ghosts: list) -> None:
         for g in ghosts:
+            if g.dead:
+                continue
+
             if self.grid_pos == (g.row, g.col):
-                self.alive = False
+                if g.frightened:
+                    g.start_death()
+                    self.score += 200
+                else:
+                    self.alive = False

@@ -25,19 +25,21 @@ def random_empty_tile() -> tuple:
         if not level.is_wall(r, c):
             return r, c
 
-#Pacman spawned on tiles
-pr, pc = random_empty_tile()
-pacman = pacman.Pacman(pr, pc)
+# --- Pacman Spawn (Standard Position) ---
+pacman = pacman.Pacman(15, 9)
 
-# ghosts spawned on tiles
-br, bc= random_empty_tile()
-blinky = ghosts.Ghost(br, bc, s.GhostType.BLINKY, level)
-pr, pc = random_empty_tile()
-pinky = ghosts.Ghost(pr, pc, s.GhostType.PINKY, level)
-ir, ic = random_empty_tile()
-inky = ghosts.Ghost(ir, ic, s.GhostType.INKY, level)
-cr, cc = random_empty_tile()
-clyde = ghosts.Ghost(cr, cc, s.GhostType.CLYDE, level)
+# --- Ghost Spawns (Ghost House) ---
+# Blinky: Outside house, active immediately
+blinky = ghosts.Ghost(7, 9, s.GhostType.BLINKY, level, spawn_delay=0)
+
+# Pinky: Center of house, 2 second delay
+pinky = ghosts.Ghost(9, 9, s.GhostType.PINKY, level, spawn_delay=2)
+
+# Inky: Left side of house, 4 second delay
+inky = ghosts.Ghost(9, 8, s.GhostType.INKY, level, spawn_delay=4)
+
+# Clyde: Right side of house, 6 second delay
+clyde = ghosts.Ghost(9, 10, s.GhostType.CLYDE, level, spawn_delay=6)
 
 while running:
     for event in pg.event.get():
