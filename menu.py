@@ -176,10 +176,10 @@ class SettingsScreen:
         self.music_on = True
         self.sfx_on = True
 
-        self.toggle_music = Button(pg.Rect(s.SCREEN_WIDTH // 2 - 200, s.SCREEN_HEIGHT // 2 - 40, 400, 64),
+        self.toggle_music = Button(pg.Rect(s.SCREEN_WIDTH // 2 - 200, s.SCREEN_HEIGHT // 2 - 60, 400, 64),
                                   "MUSIC: ON", self.btn_font, self._toggle_music)
 
-        self.toggle_sfx = Button(pg.Rect(s.SCREEN_WIDTH // 2 - 200, s.SCREEN_HEIGHT // 2 + 40, 400, 64),
+        self.toggle_sfx = Button(pg.Rect(s.SCREEN_WIDTH // 2 - 200, s.SCREEN_HEIGHT // 2 + 20, 400, 64),
                                  "SOUNDS: ON", self.btn_font, self._toggle_sfx)
 
     def _toggle_music(self):
@@ -216,8 +216,7 @@ class SettingsScreen:
                 dark_color.hsva = (h, s_val, 20, a) 
                 
                 # Updating the global color in the settings
-                import settings as st
-                st.WALL_COLOR = (dark_color.r, dark_color.g, dark_color.b)
+                s.WALL_COLOR = (dark_color.r, dark_color.g, dark_color.b)
 
     def draw(self, screen):
         screen.fill(s.WALL_COLOR)
