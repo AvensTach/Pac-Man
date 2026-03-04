@@ -1,18 +1,23 @@
 import math
+import random
 import settings as s
 import pygame as pg
 from level import Level
-from PacMan import Pacman
+from pacman import Pacman
 
 
 class Ghost:
     """ Class to represent a ghost """
 
-    def __init__(self, row: int, col: int, ghost_type: s.GhostType, level: Level):
+    def __init__(self, row: int, col: int, ghost_type: s.GhostType, level: Level, spawn_delay: int = 0):
         # grid position
         self.row = row
         self.col = col
         self.level = level
+
+        # Store spawn for respawn
+        self.start_row = row
+        self.start_col = col
 
         # visual / identity
         self.color = ghost_type.value
@@ -27,6 +32,19 @@ class Ghost:
         self.mode = 'SCATTER'
         self.mode_timer = 0
         self.scatter_target = self._get_scatter_target()
+
+        # Frightened State
+        self.frightened = False
+        self.timer = 0
+
+        # Dead State
+        self.dead = False
+        self.dead_timer = 0
+
+        # Initial Spawn State
+        self.spawn_delay = spawn_delay * s.FPS
+        # Determine if starting inside the house (Rows 9-10 are inside, Row 7 is outside)
+        self.in_house = (self.row > 7) and (8 <= self.col <= 10)
 
         # Default Scatter/Chase cycle config
         self.scatter_duration = 7 * s.FPS
@@ -59,16 +77,15 @@ class Ghost:
 
     def _get_scatter_target(self) -> tuple[int, int]:
         """ Returns the fixed target corner based on ghost identity """
-        # Coordinates can be outside the map to force ghosts into corners
         match self.ghost_type:
             case s.GhostType.BLINKY:
-                return -2, s.COLS - 3  # Top Right
+                return -2, s.COLS - 3
             case s.GhostType.PINKY:
-                return -2, 2  # Top Left
+                return -2, 2
             case s.GhostType.INKY:
-                return s.ROWS + 1, s.COLS - 1  # Bottom Right
+                return s.ROWS + 1, s.COLS - 1
             case s.GhostType.CLYDE:
-                return s.ROWS + 1, 0  # Bottom Left
+                return s.ROWS + 1, 0
             case _:
                 raise ValueError('Unknown ghost type')
 
@@ -76,40 +93,53 @@ class Ghost:
         pr, pc = pacman.grid_pos
 
         match self.ghost_type:
-            # BLINKY: Direct chase
             case s.GhostType.BLINKY:
                 return pr, pc
-
-            # PINKY: Target 4 tiles ahead of Pacman
             case s.GhostType.PINKY:
                 dr, dc = pacman.direction.value
                 return pr + (dr * 4), pc + (dc * 4)
-
-            # INKY: Usually uses Blinky pos, but simplified here to just be aggressive
-            # Let's make him target 2 tiles ahead to be slightly different from Blinky
             case s.GhostType.INKY:
                 dr, dc = pacman.direction.value
                 return pr + (dr * 2), pc + (dc * 2)
-
-            # CLYDE: Chase Pacman, but if closer than 8 tiles, retreat to scatter corner
             case s.GhostType.CLYDE:
                 dist = math.dist((self.row, self.col), (pr, pc))
                 if dist < 8:
                     return self.scatter_target
                 return pr, pc
             case _:
-                # This catches any errors if a new ghost type is added later
-                # and prevents the function from returning None implicitly.
                 raise ValueError(f"Unknown ghost type: {self.ghost_type}")
 
     def draw(self, screen: pg.Surface) -> None:
-        pg.draw.rect(screen, self.color, self.rect)
+        if self.dead or self.spawn_delay > 0:
+            if self.dead:
+                return
+
+        color = (0, 0, 255) if self.frightened else self.color
+        if self.frightened:
+            if self.timer > (s.PILL_FRIGHT_TIME // 3) or (self.timer < (s.PILL_FRIGHT_TIME // 3) and self.timer % 10 in s.GHOST_BLINK_TICKS):
+                color = (0, 0, 255)
+            else:
+                color = self.color
+        else:
+            color = self.color
+        pg.draw.rect(screen, color, self.rect)
 
     def can_move_to(self, direction: s.Direction) -> bool:
         dx, dy = direction.value
         next_row = self.row + dy
         next_col = self.col + dx
         wrapped_row, wrapped_col = self._wrapped_coords(next_row, next_col)
+
+        # Check for door tile
+        tile = self.level.layout[wrapped_row][wrapped_col]
+        if tile == "=":
+            # Only allow crossing the door if currently marked as in_house (exiting)
+            return self.in_house
+
+        # If inside house, ignore walls to get out (drifting alignment)
+        if self.in_house:
+            return True
+
         return not self.level.is_wall(wrapped_row, wrapped_col)
 
     def _start_move(self, direction: s.Direction) -> None:
@@ -125,28 +155,21 @@ class Ghost:
         """ Picks the valid direction that minimizes distance to target """
         possible_directions = []
 
-        # Filter valid moves
         for direction in [s.Direction.UP, s.Direction.LEFT, s.Direction.DOWN, s.Direction.RIGHT]:
             if self.can_move_to(direction):
-                # Don't reverse unless forced
                 if self.direction != s.Direction.STOP and self._is_opposite(direction, self.direction):
                     continue
                 possible_directions.append(direction)
 
-        # Handle Dead Ends (Force Reverse)
         if not possible_directions:
             if self.direction == s.Direction.STOP:
                 return s.Direction.STOP
-
-            # Construct reverse direction
             reverse_val = (self.direction.value[0] * -1, self.direction.value[1] * -1)
             reverse_dir = s.Direction(reverse_val)
-
             if self.can_move_to(reverse_dir):
                 return reverse_dir
             return s.Direction.STOP
 
-        # Pick Best Direction using Euclidean distance squared
         def dist_sq(d: s.Direction) -> float:
             dx, dy = d.value
             return (self.row + dy - target_row) ** 2 + (self.col + dx - target_col) ** 2
@@ -155,16 +178,67 @@ class Ghost:
 
     def update(self, pacman: Pacman) -> None:
         """ Update position and AI logic """
+        if self.dead:
+            self.dead_timer -= 1
+            if self.dead_timer <= 0:
+                self.respawn()
+            return
+
+        if self.spawn_delay > 0:
+            self.spawn_delay -= 1
+            return
+
         self._update_mode()
-        self._update_movement_decision(pacman)  # Pass pacman instead of target
+        self._update_frightened_state()
+        self._update_movement_decision(pacman)
         self._update_pixel_position()
+
+    def _update_frightened_state(self) -> None:
+        if self.frightened:
+            self.timer -= 1
+            if self.timer <= 0:
+                self.frightened = False
 
     def _update_movement_decision(self, pacman: Pacman) -> None:
         """ If not currently moving, pick the next best direction """
         if self.moving:
             return
 
-        # Only calculate target if we are actually allowed to choose a direction
+        # --- SPAWN HOUSE EXIT LOGIC ---
+        if self.in_house:
+            target_exit_r, target_exit_c = 7, 9
+
+            # If we reached the exit point (outside the box door)
+            if self.row == target_exit_r and self.col == target_exit_c:
+                self.in_house = False
+                self.direction = s.Direction.LEFT  # Force a move to start normal logic
+                return
+
+            # Logic to navigate out
+            if self.col < target_exit_c:
+                self._start_move(s.Direction.RIGHT)
+            elif self.col > target_exit_c:
+                self._start_move(s.Direction.LEFT)
+            elif self.row > target_exit_r:
+                self._start_move(s.Direction.UP)
+            return
+        # ------------------------------
+
+        if self.frightened:
+            # Random movement for frightened ghosts
+            possible_directions = []
+            for direction in [s.Direction.UP, s.Direction.LEFT, s.Direction.DOWN, s.Direction.RIGHT]:
+                if self.can_move_to(direction):
+                    if self.direction != s.Direction.STOP and self._is_opposite(direction, self.direction):
+                        continue
+                    possible_directions.append(direction)
+
+            if possible_directions:
+                next_dir = random.choice(possible_directions)
+                self._start_move(next_dir)
+            return
+
+        # Normal target selection
         match self.mode:
             case 'SCATTER':
                 tr, tc = self.scatter_target
@@ -182,6 +256,9 @@ class Ghost:
 
     def _update_mode(self) -> None:
         """ Handles the timer for switching between SCATTER and CHASE """
+        if self.frightened:
+            return
+
         self.mode_timer += 1
 
         switch_needed = False
@@ -194,7 +271,6 @@ class Ghost:
 
         if switch_needed:
             self.mode_timer = 0
-            # Flip direction immediately on mode switch
             if self.direction != s.Direction.STOP:
                 self.direction = s.Direction((self.direction.value[0] * -1, self.direction.value[1] * -1))
 
@@ -210,7 +286,6 @@ class Ghost:
         self.rect.y += dy_px
         self.move_progress += abs(dx_px) + abs(dy_px)
 
-        # Snap to grid if we've moved a full tile
         if self.move_progress >= s.TILE_SIZE:
             self.row = self.target_row
             self.col = self.target_col
@@ -225,3 +300,29 @@ class Ghost:
         new_x = self.col * s.TILE_SIZE + (s.TILE_SIZE - sprite_w) // 2
         new_y = self.row * s.TILE_SIZE + (s.TILE_SIZE - sprite_w) // 2
         self.rect.topleft = (new_x, new_y)
+
+    def start_death(self) -> None:
+        """ Puts the ghost in a dead/cooldown state """
+        self.dead = True
+        self.frightened = False
+        self.dead_timer = 5 * s.FPS  # 5 Seconds wait
+        self.moving = False
+        self.direction = s.Direction.STOP
+
+    def respawn(self) -> None:
+        """ Resets ghost to starting position and state """
+        self.row = self.start_row
+        self.col = self.start_col
+        self.target_row = self.start_row
+        self.target_col = self.start_col
+        self.frightened = False
+        self.timer = 0
+        self.dead = False
+        self.dead_timer = 0
+        self.moving = False
+        self.direction = s.Direction.STOP
+
+        # Reset relative to start position
+        self.in_house = (self.start_row > 7) and (8 <= self.start_col <= 10)
+
+        self._snap_to_grid()
