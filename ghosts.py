@@ -25,6 +25,7 @@ class Ghost:
         self.ghost_type = ghost_type
 
         # movement params
+        self.speed_multiplier = s.GHOST_SPEED_MULTIPLIER
         self.base_speed = s.BASE_SPEED
         self.direction = s.Direction.STOP
 
@@ -61,6 +62,10 @@ class Ghost:
         y = row * s.TILE_SIZE + (s.TILE_SIZE - sprite_size) // 2
 
         self.rect = pg.Rect(x, y, sprite_size, sprite_size)
+
+        # Add high-precision float position
+        self.x: float = float(x)
+        self.y: float = float(y)
 
     @property
     def grid_pos(self) -> tuple[int, int]:
@@ -275,17 +280,26 @@ class Ghost:
                 self.direction = s.Direction((self.direction.value[0] * -1, self.direction.value[1] * -1))
 
     def _update_pixel_position(self) -> None:
-        """ Handles the smooth animation between tiles """
+        """Handles the smooth animation between tiles with fractional speed."""
         if not self.moving or self.direction == s.Direction.STOP:
             return
 
-        dx_px = self.direction.value[0] * self.base_speed
-        dy_px = self.direction.value[1] * self.base_speed
+        # Adjust speed based on the ghost's speed multiplier
+        adjusted_speed = self.base_speed * self.speed_multiplier
+        dx_px = self.direction.value[0] * adjusted_speed
+        dy_px = self.direction.value[1] * adjusted_speed
 
-        self.rect.x += dx_px
-        self.rect.y += dy_px
+        # Update the floating-point position
+        self.x += dx_px
+        self.y += dy_px
+
+        # Sync the integer rect for collision/drawing
+        self.rect.x = int(self.x)
+        self.rect.y = int(self.y)
+
         self.move_progress += abs(dx_px) + abs(dy_px)
 
+        # Snap to grid when the movement progress reaches TILE_SIZE
         if self.move_progress >= s.TILE_SIZE:
             self.row = self.target_row
             self.col = self.target_col
@@ -299,7 +313,13 @@ class Ghost:
         sprite_w = self.rect.width
         new_x = self.col * s.TILE_SIZE + (s.TILE_SIZE - sprite_w) // 2
         new_y = self.row * s.TILE_SIZE + (s.TILE_SIZE - sprite_w) // 2
-        self.rect.topleft = (new_x, new_y)
+
+        # Update floats first
+        self.x = float(new_x)
+        self.y = float(new_y)
+
+        # Sync rect to floats
+        self.rect.topleft = (int(self.x), int(self.y))
 
     def start_death(self) -> None:
         """ Puts the ghost in a dead/cooldown state """
