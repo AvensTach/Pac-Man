@@ -1,10 +1,12 @@
 from enum import Enum
 
+
 class GhostType(Enum):
     BLINKY = (255, 0, 0)  # Red
     PINKY = (255, 182, 255)  # Pink
     INKY = (0, 255, 255)  # Cyan
     CLYDE = (255, 182, 85)  # Orange
+
 
 class Direction(Enum):
     STOP = (0, 0)
@@ -26,7 +28,7 @@ LAYOUT = [
     "1111011101011101111",
     "1111010000000101111",
     "111101011=110101111",
-    "00000001---10000000", # '---' is tiles that must be empty (without coins)
+    "00000001---10000000",  # '---' is tiles that must be empty (without coins)
     "1111010111110101111",
     "1111010000000101111",
     "1111010111110101111",
@@ -51,33 +53,33 @@ SCREEN_HEIGHT = ROWS * TILE_SIZE
 WALL_COLOR = (0, 0, 0)
 BORDER_COLOR = (0, 0, 255)
 BORDER_WIDTH = 3
-RADIUS = 10  
+RADIUS = 10
 FPS = 60
 
-#coins
+# coins
 COIN_COLOR = (255, 215, 0)
 COIN_RADIUS = 3
 COIN_SCORE_VALUE = 10
 
-#pills
+# pills
 PILL_COLOR = (255, 255, 255)
 PILL_RADIUS = 10
 PILL_SCORE_VALUE = 50
 PILL_BLINK_SPEED = 10
 PILL_FRIGHT_TIME = 300
 
-#score
+# score
 SCORE_FONT_SIZE = 36
 SCORE_COLOR = (255, 255, 255)
 SCORE_POSITION = (10, 10)
 SCORE_PREFIX = ""
 
-#ghosts
-GHOST_BLINK_TICKS = (1,2,3,4,5)
-GHOST_BLINKING_DURATION = PILL_FRIGHT_TIME / 3 # 1/3 of the frightened time
+# ghosts
+GHOST_BLINK_TICKS = (1, 2, 3, 4, 5)
+GHOST_BLINKING_DURATION = PILL_FRIGHT_TIME / 3  # 1/3 of the frightened time
 GHOST_SPEED_MULTIPLIER = 0.9
 
-#states
+# states
 STATE_MENU = "MENU"
 STATE_PLAYING = "PLAYING"
 STATE_SETTINGS = "STATE_SETTINGS"
@@ -91,3 +93,13 @@ BTN_FILL = (18, 18, 40)
 BTN_FILL_HOVER = (28, 28, 60)
 ACCENT = (0, 130, 255)
 ACCENT_SOFT = (0, 90, 190)
+
+# Sounds
+sound_files = {
+    "intro": "intro.wav",
+    "munch": "munch.wav",
+    "eat_ghost": "eat_ghost.wav",
+    "death": "death.wav",
+    "siren": "siren.wav",  # Normal ghost movement (loop)
+    "frightened": "frightened.wav"  # Blue ghost movement (loop)
+}
