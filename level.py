@@ -85,7 +85,7 @@ class Level:
 
     def check_pills(self, pacman, ghosts):
         for pill in self.pills:
-            pill.check_collision(pacman, ghosts)
+            pill.check_collision(pacman, ghosts,self)
 
     def draw(self, screen):
         for r in range(len(self.layout)):
