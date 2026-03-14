@@ -108,24 +108,33 @@ class Game:
         if self.state == s.STATE_PLAYING:
             if pg.time.get_ticks() - self.play_start_time < 4500:
                 return
+
             prev_level_score = self.level.score
-            prev_pacman_score = self.pacman.score
+
             for ghost in self.ghosts_list:
                 ghost.update(self.pacman)
+
             self.pacman.update(s.LAYOUT, self.level)
             self.level.check_pills(self.pacman, self.ghosts_list)
-            self.pacman.check_ghost_collision(self.ghosts_list)
-            if self.level.score > prev_level_score:
-                self.sounds["munch"].play()
-            if self.pacman.score > prev_pacman_score:
+
+            self.pacman.check_ghost_collision(self.ghosts_list, self.level)
+
+            score_diff = self.level.score - prev_level_score
+
+            if score_diff >= 200:
                 self.sounds["eat_ghost"].play()
+            elif score_diff > 0:
+                self.sounds["munch"].play()
+
             any_frightened = any(g.frightened for g in self.ghosts_list)
             target_sound = "frightened" if any_frightened else "siren"
+
             if self.current_bg_sound != target_sound:
                 if self.current_bg_sound:
                     self.sounds[self.current_bg_sound].stop()
                 self.sounds[target_sound].play(-1)
                 self.current_bg_sound = target_sound
+
             if not self.pacman.alive:
                 self.stop_bg_sounds()
                 self.sounds["death"].play()
