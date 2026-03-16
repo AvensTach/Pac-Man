@@ -2,6 +2,7 @@ import pygame as pg
 import os
 import settings as s
 
+
 class SpriteManager:
     """Manages loading, scaling, and retrieving usage sprites."""
 
@@ -19,12 +20,15 @@ class SpriteManager:
             if not os.path.exists(path):
                 print(f"Sprite missing: {filename}")
                 surf = pg.Surface((s.TILE_SIZE, s.TILE_SIZE))
-                surf.fill((150, 0, 150)) # Error/Magenta
+                surf.fill((150, 0, 150))  # Error/Magenta
                 return surf
 
-            img = pg.image.load(path).convert_alpha()
+            img = pg.image.load(path).convert()
+            # Make black color transparent
+            img.set_colorkey((0, 0, 0))
+
             # Scale 16x16 -> 32x32
-            return pg.transform.scale(img, (s.TILE_SIZE-4, s.TILE_SIZE-4))
+            return pg.transform.scale(img, (s.TILE_SIZE - 4, s.TILE_SIZE - 4))
 
         directions = {
             s.Direction.UP: "up",
@@ -36,7 +40,7 @@ class SpriteManager:
         # 1. Load Normal Ghost Sprites
         # Expects files: blinky_up.png, pinky_left.png, etc.
         for g_type in s.GhostType:
-            name_key = g_type.name.lower() # blinky, pinky...
+            name_key = g_type.name.lower()  # blinky, pinky...
             self.ghost_sprites[name_key] = {}
 
             for d_enum, d_str in directions.items():
