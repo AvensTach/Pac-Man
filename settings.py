@@ -103,3 +103,8 @@ sound_files = {
     "siren": "siren.wav",  # Normal ghost movement (loop)
     "frightened": "frightened.wav"  # Blue ghost movement (loop)
 }
+
+CONFIG = {
+    "MUSIC_ON": True,
+    "SFX_ON": True
+}
