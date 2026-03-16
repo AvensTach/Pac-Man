@@ -76,7 +76,8 @@ class Game:
         self.running = False
 
     def _reset_game(self):
-        self.level = Level()
+        score = self.level.score if self.level else 0
+        self.level = Level(score)
         self.pacman = Pacman(15, 9)
 
         self.blinky = ghosts.Ghost(7, 9, s.GhostType.BLINKY, self.level, self.sprite_manager, spawn_delay=0)
@@ -112,7 +113,7 @@ class Game:
             self.pacman.update(s.LAYOUT, self.level)
             self.level.check_pills(self.pacman, self.ghosts_list)
 
-            self.pacman.check_ghost_collision(self.ghosts_list, self.level)
+            # self.pacman.check_ghost_collision(self.ghosts_list, self.level)
 
             score_diff = self.level.score - prev_level_score
 

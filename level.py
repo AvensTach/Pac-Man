@@ -17,10 +17,10 @@ import settings as s
 
 
 class Level:
-    def __init__(self):
+    def __init__(self, score:int = 0):
         self.layout = LAYOUT
         self.coins = set()
-        self.score = 0
+        self.score = score
         self.spawn_coins()
         self.pills = [
             Pill(1, 1),
