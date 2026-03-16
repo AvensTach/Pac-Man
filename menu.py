@@ -147,6 +147,7 @@ def create_color_gradient(width, height):
         pg.draw.line(gradient, color, (x, 0), (x, height))
     return gradient
 
+
 class SettingsScreen:
     def __init__(self, on_back):
         self.on_back = on_back
@@ -157,13 +158,12 @@ class SettingsScreen:
 
         self.back_btn = Button(pg.Rect(24, 24, 220, 60), "BACK", self.btn_font, self.on_back)
 
-        # spectral palette
         self.palette_width = 400
         self.palette_height = 40
         self.palette_rect = pg.Rect(
-            s.SCREEN_WIDTH // 2 - self.palette_width // 2, 
-            s.SCREEN_HEIGHT // 2 + 100, 
-            self.palette_width, 
+            s.SCREEN_WIDTH // 2 - self.palette_width // 2,
+            s.SCREEN_HEIGHT // 2 + 100,
+            self.palette_width,
             self.palette_height
         )
 
@@ -172,50 +172,42 @@ class SettingsScreen:
         self.palette_image = create_color_gradient(self.palette_width, self.palette_height)
         self.selected_color = pg.Color(s.WALL_COLOR)
 
-        # demo toggles
-        self.music_on = True
-        self.sfx_on = True
-
+        music_text = "MUSIC: ON" if s.CONFIG["MUSIC_ON"] else "MUSIC: OFF"
         self.toggle_music = Button(pg.Rect(s.SCREEN_WIDTH // 2 - 200, s.SCREEN_HEIGHT // 2 - 60, 400, 64),
-                                  "MUSIC: ON", self.btn_font, self._toggle_music)
+                                   music_text, self.btn_font, self._toggle_music)
 
+        sfx_text = "SOUNDS: ON" if s.CONFIG["SFX_ON"] else "SOUNDS: OFF"
         self.toggle_sfx = Button(pg.Rect(s.SCREEN_WIDTH // 2 - 200, s.SCREEN_HEIGHT // 2 + 20, 400, 64),
-                                 "SOUNDS: ON", self.btn_font, self._toggle_sfx)
+                                 sfx_text, self.btn_font, self._toggle_sfx)
 
     def _toggle_music(self):
-        self.music_on = not self.music_on
-        self.toggle_music.text = f"MUSIC: {'ON' if self.music_on else 'OFF'}"
+        s.CONFIG["MUSIC_ON"] = not s.CONFIG["MUSIC_ON"]
+        self.toggle_music.text = f"MUSIC: {'ON' if s.CONFIG['MUSIC_ON'] else 'OFF'}"
+
+        if not s.CONFIG["MUSIC_ON"]:
+            pg.mixer.stop()
 
     def _toggle_sfx(self):
-        self.sfx_on = not self.sfx_on
-        self.toggle_sfx.text = f"SOUNDS: {'ON' if self.sfx_on else 'OFF'}"
+        s.CONFIG["SFX_ON"] = not s.CONFIG["SFX_ON"]
+        self.toggle_sfx.text = f"SOUNDS: {'ON' if s.CONFIG['SFX_ON'] else 'OFF'}"
 
     def handle_event(self, event):
         self.back_btn.handle_event(event)
         self.toggle_music.handle_event(event)
         self.toggle_sfx.handle_event(event)
 
-    def handle_event(self, event):
-        self.back_btn.handle_event(event)
-        self.toggle_music.handle_event(event)
-        self.toggle_sfx.handle_event(event)
-
-        # Color selection logic
-        if pg.mouse.get_pressed()[0]: 
+        if pg.mouse.get_pressed()[0]:
             m_pos = pg.mouse.get_pos()
             if self.palette_rect.collidepoint(m_pos):
                 self.indicator_x = m_pos[0]
-                
-                # Getting a color from a gradient
+
                 rel_x = m_pos[0] - self.palette_rect.x
                 picked_color = self.palette_image.get_at((rel_x, self.palette_height // 2))
-                
-                # Make the color darker for the game background (brightness 15-20%)
+
                 dark_color = pg.Color(picked_color)
                 h, s_val, v, a = dark_color.hsva
-                dark_color.hsva = (h, s_val, 20, a) 
-                
-                # Updating the global color in the settings
+                dark_color.hsva = (h, s_val, 20, a)
+
                 s.WALL_COLOR = (dark_color.r, dark_color.g, dark_color.b)
 
     def draw(self, screen):
@@ -223,15 +215,17 @@ class SettingsScreen:
 
         panel = pg.Rect(0, 0, 620, 460)
         panel.center = (s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2)
-        draw_shadowed_round_rect(screen, panel, fill=s.PANEL_COLOR, border=s.ACCENT_SOFT, radius=28, border_w=2, shadow_offset=(0, 10))
+        draw_shadowed_round_rect(screen, panel, fill=s.PANEL_COLOR, border=s.ACCENT_SOFT, radius=28, border_w=2,
+                                 shadow_offset=(0, 10))
 
-        draw_text_center(screen, self.title_font, s.STATE_SETTINGS, (s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2 - 160))
-        draw_text_center(screen, self.text_font, "Click to toggle (demo)", (s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2 - 120), color=s.TEXT_MUTED)
+        draw_text_center(screen, self.title_font, "SETTINGS", (s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2 - 160))
+        draw_text_center(screen, self.text_font, "Click to toggle", (s.SCREEN_WIDTH // 2, s.SCREEN_HEIGHT // 2 - 120),
+                         color=s.TEXT_MUTED)
 
         screen.blit(self.palette_image, self.palette_rect)
         pg.draw.rect(screen, s.TEXT, self.palette_rect, width=2, border_radius=2)
 
-        pg.draw.line(screen, s.TEXT, (self.indicator_x, self.palette_rect.y - 5), 
+        pg.draw.line(screen, s.TEXT, (self.indicator_x, self.palette_rect.y - 5),
                      (self.indicator_x, self.palette_rect.bottom + 5), width=3)
 
         self.toggle_music.draw(screen)

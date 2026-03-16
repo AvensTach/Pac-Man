@@ -5,7 +5,7 @@ import ghosts
 from pacman import Pacman
 from level import Level
 from menu import MainMenuScreen, SettingsScreen
-from assets import SpriteManager  # <--- Import new class
+from assets import SpriteManager
 
 
 class Game:
@@ -21,14 +21,11 @@ class Game:
         self.play_start_time = 0
         self.current_bg_sound = None
 
-        # --- Load Sounds ---
         self.sounds = {}
         self._analyze_sounds()
 
-        # --- Load Sprites ---
-        self.sprite_manager = SpriteManager()  # <--- Initialize here
+        self.sprite_manager = SpriteManager()
 
-        # --- Menu Screens ---
         self.menu_screen = MainMenuScreen(
             on_play=self._start_game,
             on_exit=self._quit_game,
@@ -64,7 +61,8 @@ class Game:
         self._reset_game()
         self.state = s.STATE_PLAYING
         self.stop_bg_sounds()
-        self.sounds["intro"].play()
+        if s.CONFIG["MUSIC_ON"]:
+            self.sounds["intro"].play()
         self.play_start_time = pg.time.get_ticks()
 
     def _open_settings(self):
@@ -78,11 +76,10 @@ class Game:
         self.running = False
 
     def _reset_game(self):
-        """Initializes a fresh game state."""
-        self.level = Level()
+        score = self.level.score if self.level else 0
+        self.level = Level(score)
         self.pacman = Pacman(15, 9)
 
-        # Pass sprite_manager to ghosts
         self.blinky = ghosts.Ghost(7, 9, s.GhostType.BLINKY, self.level, self.sprite_manager, spawn_delay=0)
         self.pinky = ghosts.Ghost(9, 9, s.GhostType.PINKY, self.level, self.sprite_manager, spawn_delay=2)
         self.inky = ghosts.Ghost(9, 8, s.GhostType.INKY, self.level, self.sprite_manager, spawn_delay=4)
@@ -90,7 +87,6 @@ class Game:
 
         self.ghosts_list = [self.blinky, self.pinky, self.inky, self.clyde]
 
-    # ... (Rest of Game class handling events, updates, drawing remains identical) ...
     def _handle_events(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
@@ -117,14 +113,24 @@ class Game:
             self.pacman.update(s.LAYOUT, self.level)
             self.level.check_pills(self.pacman, self.ghosts_list)
 
-            self.pacman.check_ghost_collision(self.ghosts_list, self.level)
+            # self.pacman.check_ghost_collision(self.ghosts_list, self.level)
 
             score_diff = self.level.score - prev_level_score
 
             if score_diff >= 200:
-                self.sounds["eat_ghost"].play()
+                if s.CONFIG["SFX_ON"]:
+                    self.sounds["eat_ghost"].play()
             elif score_diff > 0:
-                self.sounds["munch"].play()
+                if s.CONFIG["SFX_ON"]:
+                    self.sounds["munch"].play()
+
+            if len(self.level.coins) == 0:
+                self._reset_game()
+                self.play_start_time = pg.time.get_ticks()
+                self.stop_bg_sounds()
+                if s.CONFIG["MUSIC_ON"]:
+                    self.sounds["intro"].play()
+                return
 
             any_frightened = any(g.frightened for g in self.ghosts_list)
             target_sound = "frightened" if any_frightened else "siren"
@@ -132,12 +138,17 @@ class Game:
             if self.current_bg_sound != target_sound:
                 if self.current_bg_sound:
                     self.sounds[self.current_bg_sound].stop()
-                self.sounds[target_sound].play(-1)
+                if s.CONFIG["MUSIC_ON"]:
+                    self.sounds[target_sound].play(-1)
                 self.current_bg_sound = target_sound
+            elif not s.CONFIG["MUSIC_ON"] and self.current_bg_sound:
+                self.sounds[self.current_bg_sound].stop()
+                self.current_bg_sound = None
 
             if not self.pacman.alive:
                 self.stop_bg_sounds()
-                self.sounds["death"].play()
+                if s.CONFIG["SFX_ON"]:
+                    self.sounds["death"].play()
                 print("Pacman DIED")
                 self.state = s.STATE_MENU
                 self.pacman.alive = True
