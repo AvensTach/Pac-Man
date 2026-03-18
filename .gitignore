@@ -6,3 +6,6 @@
 
 # Folder for perssonal librery test
 /myTests/
+
+__pycache__/
+*.pyc
