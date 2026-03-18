@@ -13,7 +13,6 @@ class Ghost:
 
     def __init__(self, row: int, col: int, ghost_type: s.GhostType, level: Level,
                  sprite_manager: 'assets.SpriteManager', spawn_delay: int = 0):
-        # ... (Previous init code remains the same) ...
         self.row = row
         self.col = col
         self.level = level
@@ -23,9 +22,7 @@ class Ghost:
         self.name = ghost_type.name
         self.ghost_type = ghost_type
 
-        # --- NEW CODE ---
         self.sprite_manager = sprite_manager
-        # ----------------
 
         # movement params
         self.speed_multiplier = s.GHOST_SPEED_MULTIPLIER
@@ -35,7 +32,7 @@ class Ghost:
         # AI State
         self.mode = 'SCATTER'
         self.mode_timer = 0
-        self.scatter_target = self._get_scatter_target()  # Ensure this method exists or is copied from previous logic
+        self.scatter_target = self._get_scatter_target()
 
         # Frightened State
         self.frightened = False
@@ -65,9 +62,6 @@ class Ghost:
         self.x: float = float(x)
         self.y: float = float(y)
 
-    # ... (Keep property grid_pos, _is_opposite, _wrapped_coords, etc.) ...
-    # ... (Keep _get_scatter_target, _get_chase_target) ...
-    # ... (I am omitting unchanged methods for brevity, ensure you keep them!) ...
 
     @property
     def grid_pos(self) -> tuple[int, int]:
@@ -95,7 +89,6 @@ class Ghost:
                 raise ValueError('Unknown ghost type')
 
     def _get_chase_target(self, pacman: Pacman) -> tuple[int, int]:
-        # (Same logic as provided in your snippet)
         pr, pc = pacman.grid_pos
         match self.ghost_type:
             case s.GhostType.BLINKY:
@@ -113,7 +106,6 @@ class Ghost:
             case _:
                 raise ValueError(f"Unknown ghost type")
 
-    # --- UPDATED DRAW METHOD ---
     def draw(self, screen: pg.Surface) -> None:
         if self.dead or self.spawn_delay > 0:
             if self.dead:
@@ -141,8 +133,6 @@ class Ghost:
             color = (0, 0, 255) if show_frightened else self.color
             pg.draw.rect(screen, color, self.rect)
 
-    # ... (Keep can_move_to, _start_move, _choose_best_direction, update, etc.) ...
-    # ... (They remain exactly the same as your previous code) ...
 
     def can_move_to(self, direction: s.Direction) -> bool:
         dx, dy = direction.value
