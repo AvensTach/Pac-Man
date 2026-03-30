@@ -113,7 +113,7 @@ class Game:
             self.pacman.update(s.LAYOUT, self.level)
             self.level.check_pills(self.pacman, self.ghosts_list)
 
-            # self.pacman.check_ghost_collision(self.ghosts_list, self.level)
+            self.pacman.check_ghost_collision(self.ghosts_list, self.level)
 
             score_diff = self.level.score - prev_level_score
 
@@ -147,6 +147,7 @@ class Game:
 
             if not self.pacman.alive:
                 self.stop_bg_sounds()
+                self.level.score = 0
                 if s.CONFIG["SFX_ON"]:
                     self.sounds["death"].play()
                 print("Pacman DIED")
