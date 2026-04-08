@@ -1,7 +1,17 @@
+"""
+Ghost entity module for the Pac-Man game.
+
+This module defines the Ghost class and its core logic, including AI state
+management (Chase, Scatter, Frightened, Dead), pathfinding tailored to
+specific ghost personalities (Blinky, Pinky, Inky, Clyde), grid-based
+movement calculation, and sprite rendering via Pygame.
+"""
 import math
 import random
-import settings as s
+
 import pygame as pg
+
+import settings as s
 from level import Level
 from pacman import Pacman
 # Import strictly for type hinting if preferred, or just import
@@ -10,9 +20,31 @@ import assets
 
 class Ghost:
     """ Class to represent a ghost """
+    # pylint: disable=too-many-instance-attributes, too-many-positional-arguments
 
-    def __init__(self, row: int, col: int, ghost_type: s.GhostType, level: Level,
-                 sprite_manager: 'assets.SpriteManager', spawn_delay: int = 0):
+    def __init__(
+            self,
+            row: int, col: int,
+            ghost_type: s.GhostType,
+            level: Level,
+            sprite_manager: 'assets.SpriteManager',
+            spawn_delay: int = 0,
+    ):
+        """
+        Initialize a new Ghost instance.
+
+        Sets up the ghost's starting position, movement parameters, AI states,
+        and calculates its initial collision hitbox based on the grid coordinates.
+
+        Args:
+            row (int): The starting grid row.
+            col (int): The starting grid column.
+            ghost_type (s.GhostType): The specific personality/type of the ghost.
+            level (Level): Reference to the level layout for collision detection.
+            sprite_manager (assets.SpriteManager): Manager for rendering sprites.
+            spawn_delay (int, optional): Time in seconds to wait before spawning. Defaults to 0.
+        """
+        # pylint: disable=too-many-arguments
         self.row = row
         self.col = col
         self.level = level
@@ -62,9 +94,9 @@ class Ghost:
         self.x: float = float(x)
         self.y: float = float(y)
 
-
     @property
     def grid_pos(self) -> tuple[int, int]:
+        """Return the current grid position (row, col) of the ghost."""
         return self.row, self.col
 
     @staticmethod
@@ -101,12 +133,14 @@ class Ghost:
                 return pr + (dr * 2), pc + (dc * 2)
             case s.GhostType.CLYDE:
                 dist = math.dist((self.row, self.col), (pr, pc))
-                if dist < 8: return self.scatter_target
+                if dist < 8:
+                    return self.scatter_target
                 return pr, pc
             case _:
-                raise ValueError(f"Unknown ghost type")
+                raise ValueError("Unknown ghost type")
 
     def draw(self, screen: pg.Surface) -> None:
+        """Render the ghost on the provided screen."""
         if self.dead or self.spawn_delay > 0:
             if self.dead:
                 return
@@ -116,7 +150,7 @@ class Ghost:
 
         if self.frightened:
             # Logic for blinking near end of fright time
-            is_blinking_phase = (self.timer < (s.PILL_FRIGHT_TIME // 3))
+            is_blinking_phase = self.timer < (s.PILL_FRIGHT_TIME // 3)
             should_blink_normal = is_blinking_phase and (self.timer % 10 in s.GHOST_BLINK_TICKS)
 
             if not should_blink_normal:
@@ -133,15 +167,19 @@ class Ghost:
             color = (0, 0, 255) if show_frightened else self.color
             pg.draw.rect(screen, color, self.rect)
 
-
     def can_move_to(self, direction: s.Direction) -> bool:
+        """Check if the ghost can legally move in the given direction."""
         dx, dy = direction.value
         next_row = self.row + dy
         next_col = self.col + dx
         wrapped_row, wrapped_col = self._wrapped_coords(next_row, next_col)
         tile = self.level.layout[wrapped_row][wrapped_col]
-        if tile == "=": return self.in_house
-        if self.in_house: return True
+
+        if tile == "=":
+            return self.in_house
+        if self.in_house:
+            return True
+
         return not self.level.is_wall(wrapped_row, wrapped_col)
 
     def _start_move(self, direction: s.Direction) -> None:
@@ -157,14 +195,18 @@ class Ghost:
         possible_directions = []
         for direction in [s.Direction.UP, s.Direction.LEFT, s.Direction.DOWN, s.Direction.RIGHT]:
             if self.can_move_to(direction):
-                if self.direction != s.Direction.STOP and self._is_opposite(direction, self.direction):
+                if (self.direction != s.Direction.STOP and
+                        self._is_opposite(direction, self.direction)):
                     continue
                 possible_directions.append(direction)
+
         if not possible_directions:
-            if self.direction == s.Direction.STOP: return s.Direction.STOP
+            if self.direction == s.Direction.STOP:
+                return s.Direction.STOP
             reverse_val = (self.direction.value[0] * -1, self.direction.value[1] * -1)
             reverse_dir = s.Direction(reverse_val)
-            if self.can_move_to(reverse_dir): return reverse_dir
+            if self.can_move_to(reverse_dir):
+                return reverse_dir
             return s.Direction.STOP
 
         def dist_sq(d: s.Direction) -> float:
@@ -174,13 +216,17 @@ class Ghost:
         return min(possible_directions, key=dist_sq)
 
     def update(self, pacman: Pacman) -> None:
+        """Update the ghost's AI state, mode, and pixel position."""
         if self.dead:
             self.dead_timer -= 1
-            if self.dead_timer <= 0: self.respawn()
+            if self.dead_timer <= 0:
+                self.respawn()
             return
+
         if self.spawn_delay > 0:
             self.spawn_delay -= 1
             return
+
         self._update_mode()
         self._update_frightened_state()
         self._update_movement_decision(pacman)
@@ -189,31 +235,48 @@ class Ghost:
     def _update_frightened_state(self) -> None:
         if self.frightened:
             self.timer -= 1
-            if self.timer <= 0: self.frightened = False
+            if self.timer <= 0:
+                self.frightened = False
+
+    def _handle_house_movement(self) -> None:
+        """Handle pathing while the ghost is trapped in the center house."""
+        target_exit_r, target_exit_c = 7, 9
+        if self.row == target_exit_r and self.col == target_exit_c:
+            self.in_house = False
+            self.direction = s.Direction.LEFT
+            return
+
+        if self.col < target_exit_c:
+            self._start_move(s.Direction.RIGHT)
+        elif self.col > target_exit_c:
+            self._start_move(s.Direction.LEFT)
+        elif self.row > target_exit_r:
+            self._start_move(s.Direction.UP)
 
     def _update_movement_decision(self, pacman: Pacman) -> None:
-        if self.moving: return
+        if self.moving:
+            return
+
         if self.in_house:
-            target_exit_r, target_exit_c = 7, 9
-            if self.row == target_exit_r and self.col == target_exit_c:
-                self.in_house = False
-                self.direction = s.Direction.LEFT
-                return
-            if self.col < target_exit_c:
-                self._start_move(s.Direction.RIGHT)
-            elif self.col > target_exit_c:
-                self._start_move(s.Direction.LEFT)
-            elif self.row > target_exit_r:
-                self._start_move(s.Direction.UP)
+            self._handle_house_movement()
             return
 
         if self.frightened:
             possible_directions = []
-            for direction in [s.Direction.UP, s.Direction.LEFT, s.Direction.DOWN, s.Direction.RIGHT]:
+            for direction in [
+                s.Direction.UP,
+                s.Direction.LEFT,
+                s.Direction.DOWN,
+                s.Direction.RIGHT,
+            ]:
                 if self.can_move_to(direction):
-                    if self.direction != s.Direction.STOP and self._is_opposite(direction, self.direction):
+                    if (
+                            self.direction != s.Direction.STOP
+                            and self._is_opposite(direction, self.direction)
+                    ):
                         continue
                     possible_directions.append(direction)
+
             if possible_directions:
                 next_dir = random.choice(possible_directions)
                 self._start_move(next_dir)
@@ -228,36 +291,48 @@ class Ghost:
                 raise ValueError('Unknown ghost mode')
 
         next_dir = self._choose_best_direction(tr, tc)
+
         if next_dir != s.Direction.STOP:
             self._start_move(next_dir)
         else:
             self.direction = s.Direction.STOP
 
     def _update_mode(self) -> None:
-        if self.frightened: return
+        if self.frightened:
+            return
+
         self.mode_timer += 1
         switch_needed = False
+
         if self.mode == 'SCATTER' and self.mode_timer > self.scatter_duration:
-            self.mode = 'CHASE';
+            self.mode = 'CHASE'
             switch_needed = True
         elif self.mode == 'CHASE' and self.mode_timer > self.chase_duration:
-            self.mode = 'SCATTER';
+            self.mode = 'SCATTER'
             switch_needed = True
+
         if switch_needed:
             self.mode_timer = 0
             if self.direction != s.Direction.STOP:
-                self.direction = s.Direction((self.direction.value[0] * -1, self.direction.value[1] * -1))
+                self.direction = s.Direction((
+                    self.direction.value[0] * -1,
+                    self.direction.value[1] * -1
+                ))
 
     def _update_pixel_position(self) -> None:
-        if not self.moving or self.direction == s.Direction.STOP: return
+        if not self.moving or self.direction == s.Direction.STOP:
+            return
+
         adjusted_speed = self.base_speed * self.speed_multiplier
         dx_px = self.direction.value[0] * adjusted_speed
         dy_px = self.direction.value[1] * adjusted_speed
+
         self.x += dx_px
         self.y += dy_px
         self.rect.x = int(self.x)
         self.rect.y = int(self.y)
         self.move_progress += abs(dx_px) + abs(dy_px)
+
         if self.move_progress >= s.TILE_SIZE:
             self.row = self.target_row
             self.col = self.target_col
@@ -269,11 +344,13 @@ class Ghost:
         sprite_w = self.rect.width
         new_x = self.col * s.TILE_SIZE + (s.TILE_SIZE - sprite_w) // 2
         new_y = self.row * s.TILE_SIZE + (s.TILE_SIZE - sprite_w) // 2
+
         self.x = float(new_x)
         self.y = float(new_y)
         self.rect.topleft = (int(self.x), int(self.y))
 
     def start_death(self) -> None:
+        """Trigger the death state for the ghost, returning them to the spawn point."""
         self.dead = True
         self.frightened = False
         self.dead_timer = 5 * s.FPS
@@ -281,6 +358,7 @@ class Ghost:
         self.direction = s.Direction.STOP
 
     def respawn(self) -> None:
+        """Reset the ghost to its initial spawn state and position."""
         self.row = self.start_row
         self.col = self.start_col
         self.target_row = self.start_row
