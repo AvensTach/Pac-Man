@@ -1,9 +1,12 @@
 # pylint: disable=missing-docstring, redefined-outer-name, protected-access, too-many-positional-arguments, too-many-arguments
+import os
 import pytest
 import pygame as pg
 from game import Game
 import settings as s
 
+os.environ["SDL_AUDIODRIVER"] = "dummy"
+os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 @pytest.fixture
 def game_instance():

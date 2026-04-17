@@ -10,6 +10,10 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
 
+    env:
+      SDL_AUDIODRIVER: dummy
+      SDL_VIDEODRIVER: dummy
+
     strategy:
       matrix:
         python-version: ["3.11"]
