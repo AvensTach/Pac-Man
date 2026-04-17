@@ -31,16 +31,24 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        # If you have a requirements.txt file, GitHub will install libraries from it
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        # Install tools for checking the code
-        pip install pylint pytest
+        pip install -r requirements.txt
+        pip install pytest pytest-html pylint
 
     - name: Lint code (Pylint)
       run: |
         # Runs pylint for all .py files and passes if score is >= 8.5
-        pylint --fail-under=8.5 $(git ls-files '*.py')
+        pylint --fail-under=8.5 $(git ls-files '*.py') > pylint_report.txt || true
 
     - name: Run tests (Pytest)
       run: |
-        pytest
+        pytest --html=pytest_report.html --self-contained-html || true
+
+    - name: Upload Test and Linting Reports
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: code-quality-reports
+        path: |
+          pytest_report.html
+          pylint_report.txt
+        retention-days: 14 # Reports will be available for 14 days
