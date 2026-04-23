@@ -1,8 +1,10 @@
-"""Tests for Level class."""
-
+import pytest
 from level import Level
 from unittest.mock import Mock
 
+@pytest.fixture
+def level():
+    return Level()
 
 def test_spawn_coins_creates_coins():
     """Test that coins are created."""
