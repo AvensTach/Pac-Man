@@ -1,5 +1,14 @@
-import pygame as pg
+"""
+Asset management module for game sprites.
+
+This module provides the SpriteManager class, which is responsible for handling
+the loading, scaling, and retrieval of graphical assets (sprites) for the game.
+It specifically manages directional and state-based sprites for ghost entities,
+processes transparency (colorkeying), scales images to fit the game's tile size,
+and includes a fallback rendering mechanism for missing files.
+"""
 import os
+import pygame as pg
 import settings as s
 
 
