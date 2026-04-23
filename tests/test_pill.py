@@ -1,5 +1,7 @@
-import pytest
+# pylint: disable=missing-docstring, redefined-outer-name, protected-access, too-many-positional-arguments, too-many-arguments
 from unittest.mock import MagicMock, patch
+
+import pytest
 import pygame as pg
 
 from pill import Pill
@@ -17,7 +19,7 @@ def mock_settings(monkeypatch):
 
 
 @pytest.fixture
-def pill(mock_settings):
+def pill(mock_settings):  # pylint: disable=unused-argument
     return Pill(row=2, col=3)
 
 

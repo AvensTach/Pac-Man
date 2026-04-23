@@ -1,7 +1,8 @@
-import math
+# pylint: disable=missing-docstring, redefined-outer-name, protected-access, too-many-positional-arguments, too-many-arguments
+from unittest.mock import MagicMock
+
 import pytest
 import pygame as pg
-from unittest.mock import MagicMock
 
 from pacman import Pacman
 from settings import TILE_SIZE, Direction, COLS, COIN_SCORE_VALUE
@@ -89,7 +90,19 @@ class TestPacman:
         assert pacman.can_move_to(dummy_layout, direction_mock) is False
 
     def test_eat_coin(self, pacman, mock_level, dummy_layout):
-        mock_level.coins = {(5, 5)}
+        pacman.row = 2
+        pacman.col = 2
+
+        pacman.x = pacman.col * TILE_SIZE
+        pacman.y = pacman.row * TILE_SIZE
+
+        if hasattr(pacman, 'rect'):
+            pacman.rect.x = pacman.x
+            pacman.rect.y = pacman.y
+
+        pacman.moving = True
+
+        mock_level.coins = {(2, 2)}
         initial_score = mock_level.score
 
         pacman.update(dummy_layout, mock_level)
