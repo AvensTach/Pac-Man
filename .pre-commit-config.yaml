@@ -1,0 +1,20 @@
+repos:
+  - repo: local
+    hooks:
+      # 1. Pylint Hook
+      - id: pylint
+        name: pylint
+        entry: python -m pylint
+        language: system
+        types: [python]
+        args:
+          - "--fail-under=8.5"
+
+      # 2. Pytest Hook
+      - id: pytest
+        name: pytest
+        entry: pytest
+        language: system
+        types: [python]
+        pass_filenames: false   # Run all tests, not just tests for modified files
+        always_run: true        # Run this hook on every commit
