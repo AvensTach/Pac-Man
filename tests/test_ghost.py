@@ -1,5 +1,7 @@
-import pytest
+# pylint: disable=missing-docstring, redefined-outer-name, protected-access, too-many-positional-arguments, too-many-arguments
 from unittest.mock import MagicMock
+
+import pytest
 import pygame as pg
 
 import settings as s
